@@ -1,0 +1,14 @@
+  GNU nano 2.5.3                                                         File: addvlan.yaml                                                                                                                        
+
+---
+- hosts: sop
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+      - name: create VLAN
+        ios_vlan:
+          vlan_id: 328
+          name: 128.40.128.0/23_Desktop@UCL
+          state: present
+
