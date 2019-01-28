@@ -1,0 +1,18 @@
+---
+
+switches:
+  - hostname: ce3650-17-60-test
+    router: cisco-ci
+    ipaddress: 172.17.59.77
+    snmp: 1st floor engineering
+    profile: 3650-48P
+    native: 1001
+
+
+vlan:
+   data_vl_name: ucldesktop
+   data_vlan: 17
+   voice_vl_name: voip
+   voice_vlan: 4
+
+    #hostname: {{ item.ipaddress | regex_replace('(172).(?P<one>(17|16)).(?P<two>\d+).(?P<three>\d+)', '\\g<one>-\\g<two>-\\g<three>-confg') }}
