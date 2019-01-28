@@ -1,0 +1,156 @@
+
+version 12.1
+no service pad
+service timestamps debug datetime localtime show-timezone
+service timestamps log datetime localtime show-timezone
+service password-encryption
+
+hostname {{ item.hostname }}
+!
+!
+!
+aaa new-model
+aaa authentication username-prompt "Please login with local Username: "
+aaa authentication login default group tacacs+ local
+aaa authentication login console local
+aaa authentication enable default group tacacs+ enable
+aaa authorization exec default group tacacs+ if-authenticated
+aaa accounting exec default start-stop group tacacs+
+aaa accounting commands 15 default start-stop group tacacs+
+
+
+!
+clock timezone GMT 0
+clock summer-time BST recurring last Sun Mar 2:00 last Sun Oct 2:00
+!
+ip subnet-zero
+!
+ip name-server 144.82.250.1 193.60.250.1
+ip domain list BCC.AC.UK.
+ip domain list UCL.AC.UK.
+ip domain list AC.UK.
+ip domain list UK.
+ip domain list .
+no ip domain lookup
+ip domain name ucl.ac.uk
+!
+vtp domain {{ item.hostname }}
+vtp mode transparent
+!
+spanning-tree mode rapid-pvst
+!
+vlan {{ vlan.data_vlan }}
+ name {{ vlan.data_vl_name }}
+!
+vlan {{ vlan.voice_vlan }}
+ name {{ vlan.voice_vl_name }}
+!
+vlan 995
+ name Management
+!
+!
+interface range GigabitEthernet1/0/1 - 48
+ switchport access vlan {{ vlan.data_vlan }}
+ switchport mode access
+ {% if vlan.voice_vlan is not none -%}
+ switchport voice vlan  {{ vlan.voice_vlan }}
+ {% endif -%}
+ switchport port-security maximum 50
+ switchport port-security
+ switchport port-security violation protect	
+ no ip address
+ auto qos voip cisco-phone 
+ spanning-tree portfast
+!
+!
+!
+interface range TenGigabitEthernet1/1/1 - 2
+ switchport trunk native vlan {{ item.native }}
+ switchport trunk allowed vlan {{ vlan.data_vlan }},995
+ switchport trunk allowed vlan {{ vlan.data_vlan }},{{vlan.voice_vlan}},995
+ switchport mode trunk
+ switchport nonegotiate
+ no ip address
+ auto qos voip trust 
+!
+
+!
+interface Vlan1
+ no ip address
+ no ip route-cache
+ shutdown
+!
+interface Vlan995
+ ip address {{item.ipaddress}} 255.255.252.0
+ no ip route-cache
+!
+!
+ip default-gateway {{ hostvars[groups[item.router][0]]['gateway']}}
+!
+no ip http server
+no ip http secure-server
+!
+logging host 10.36.50.60
+logging host 10.28.50.60
+access-list 22 permit 128.40.19.0 0.0.0.255
+access-list 22 permit 172.17.{{ item.ipaddress | regex_replace ('(\d+).(\d+).(\d+).(\d+)','\\3') }}.0 0.0.3.255
+access-list 22 permit 10.28.50.0 0.0.0.255
+access-list 22 permit 10.36.50.0 0.0.0.255
+access-list 22 permit 10.29.50.0 0.0.0.255
+access-list 22 permit 10.37.50.0 0.0.0.255
+access-list 22 deny   any
+access-list 23 permit 10.28.50.0 0.0.0.255
+access-list 23 permit 10.36.50.0 0.0.0.255
+access-list 23 permit 10.29.50.0 0.0.0.255
+access-list 23 permit 10.37.50.0 0.0.0.255
+access-list 23 permit 128.40.18.0 0.0.1.255
+access-list 23 deny   any
+!
+snmp-server engineID local 00000009020000B064CDEF40
+snmp-server community blooming RO 23
+snmp-server location {{item.snmp}}
+snmp-server contact CENTRAL: UCL ISD Network Group (020-7679-9500)
+snmp-server chassis-id 0x12
+tacacs-server host 10.36.50.60
+tacacs-server host 10.28.50.60
+tacacs-server key 7 00231C070C5E0A021F34424548
+!
+!
+!
+!
+banner motd ^
+       *************************************************************
+       *         This is a UCL Cisco 3650-48P switch              *
+       *                                                           *
+       *  - WARNING: Authorised access ONLY! Disconnect now if     *
+       *    not authorised!                                        *
+       *                                                           *
+       *  - This system is managed by:                             *
+       *                                                           *
+       *    Network Operations Dept., Information Systems          *
+       *    Division, University College London.                   *
+       *                                                           *
+       *    Telephone Number: (020)7-6797-350                      *
+       *    Email: nwg-ops@ucl.ac.uk                               *
+       *                                                           *
+       *************************************************************
+^
+!
+line con 0
+  login authentication console
+  exec-timeout 60 0
+ logging synchronous
+line vty 0 4
+  access-class 22 in
+  exec-timeout 60 0
+ logging synchronous
+  transport input ssh
+line vty 5 15
+  no exec
+  transport input none
+!
+ntp server 144.82.100.42
+ntp server 144.82.100.59
+ntp server 144.82.100.58
+end
+
