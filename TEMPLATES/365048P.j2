@@ -32,17 +32,12 @@ interface range TenGigabitEthernet1/1/1 - 2
  switchport trunk allowed vlan {{ vlan.data_vlan }},{{vlan.voice_vlan}},995
  switchport mode trunk
  switchport nonegotiate
- no ip address
  auto qos voip trust 
 !
 !
 interface Vlan995
  ip address {{item.ipaddress}} 255.255.252.0
- no ip route-cache
 !
-!
-ip default-gateway {{ hostvars[groups[item.router][0]]['gateway']}}
-
 access-list 22 permit 128.40.19.0 0.0.0.255
 access-list 22 permit 172.17.{{ item.ipaddress | regex_replace ('(\d+).(\d+).(\d+).(\d+)','\\3') }}.0 0.0.3.255
 access-list 22 permit 10.28.50.0 0.0.0.255
