@@ -1,16 +1,7 @@
 
-version 12.1
-no service pad
-service timestamps debug datetime localtime show-timezone
-service timestamps log datetime localtime show-timezone
-service password-encryption
 
 hostname {{ item.hostname }}
 !
-
-
-
-
 vlan {{ vlan.data_vlan }}
  name {{ vlan.data_vl_name }}
 !
@@ -44,8 +35,6 @@ interface range TenGigabitEthernet1/1/1 - 2
  no ip address
  auto qos voip trust 
 !
-
-
 !
 interface Vlan995
  ip address {{item.ipaddress}} 255.255.252.0
@@ -60,8 +49,4 @@ access-list 22 permit 10.28.50.0 0.0.0.255
 access-list 22 permit 10.36.50.0 0.0.0.255
 
 snmp-server location {{item.snmp}}
-!
-!
-!
-!
 
