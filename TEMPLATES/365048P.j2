@@ -34,6 +34,7 @@ interface range TenGigabitEthernet1/1/1 - 2
  switchport nonegotiate
  auto qos voip trust 
 !
+snmp-server location {{item.snmp}}
 !
 interface Vlan995
  ip address {{item.ipaddress}} 255.255.252.0
@@ -43,5 +44,5 @@ access-list 22 permit 172.17.{{ item.ipaddress | regex_replace ('(\d+).(\d+).(\d
 access-list 22 permit 10.28.50.0 0.0.0.255
 access-list 22 permit 10.36.50.0 0.0.0.255
 
-snmp-server location {{item.snmp}}
+
 
