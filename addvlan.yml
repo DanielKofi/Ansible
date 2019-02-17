@@ -1,14 +1,21 @@
-  GNU nano 2.5.3                                                         File: addvlan.yaml                                                                                                                        
-
 ---
-- hosts: sop
+- hosts: nss
   connection: network_cli
   gather_facts: no
 
   tasks:
-      - name: create VLAN
+      - name: add vlan to database
         ios_vlan:
-          vlan_id: 328
-          name: 128.40.128.0/23_Desktop@UCL
+          vlan_id: 715
+          name: 10.7.9.0/24_Space_Availability
           state: present
 
+      - name: add vlan to trunk ports
+        ios_config:
+          lines:
+            - sw trunk allowed vlan add 715
+          parents: "{{ item }}"
+        with_items:
+            - interface Te1/1/4
+            - interface Te1/1/3 
+        
