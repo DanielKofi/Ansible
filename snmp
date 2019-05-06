@@ -1,0 +1,15 @@
+- name: Get SNMP Location details
+  hosts: dev
+  connection: network_cli
+  gather_facts: no
+  tasks:
+    - name: Find SNMP string
+      register: snmp_out
+      ios_command:  
+         commands:
+          - "show snmp location"  
+
+    - name: output facts to terminal window
+      debug:
+        msg: >
+          Device' {{inventory_hostname}} {{snmp_out.stdout_lines}}' 
