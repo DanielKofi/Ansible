@@ -1,0 +1,48 @@
+- name: UPGRADE 3650 SWITCH
+  hosts: dev
+  connection: network_cli
+  gather_facts: no
+
+
+  tasks:
+    - name: GATHER SWITCH FACTS
+      ios_facts:
+
+    - name: Disable file task prompting
+      ios_config:
+        lines: file prompt quiet
+      tags: copy   
+
+    - name: UPGRADE IOS IMAGE IF NOT COMPLIANT
+      block:
+      - name: COPY OVER IOS IMAGE
+        ios_command:
+           commands:
+              - command: "copy tftp://10.36.50.60/cat3k_caa-universalk9.16.06.05.SPA.bin flash:"        
+           timeout: 2400
+        tags: copy
+
+      - name: SET BOOT SYSTEM FLASH
+        ios_config:
+          commands:
+             - "no boot system"
+             - "boot system switch all flash:cat3k_caa-universalk9.16.06.05.SPA.bin"
+             - "do wr" 
+        tags: set
+ 
+      - name: REBOOT SWITCH
+        ios_command:
+          commands:
+             - command: "reload"
+               prompt: '\[confirm\]'
+               answer: "\r"
+        tags: load
+
+      - name: WAIT FOR ROUTER TO RETURN
+        wait_for:
+          host: "{{inventory_hostname}}"
+          port: 22
+          delay: 180
+        delegate_to: localhost
+
+        tags: wait
